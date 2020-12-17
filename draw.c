@@ -5,7 +5,9 @@
 
 #include "include/body.h"
 
+//TODO consider having speed be affected by window size
 #define SPEED 50000 //global refresh rate (for usleep())
+#define TIMEOUT 1
 
 //#define DEBUG 1
 
@@ -20,6 +22,8 @@ int main(){
 	int score = 0;
 	int score2 = 0;
 	int highscore;
+	int input;
+	int dir;
 
 	//TODO consider removing score2 altogether
 
@@ -31,6 +35,7 @@ int main(){
 	keypad(stdscr, true);
 	noecho();
 	curs_set(0);
+	set_escdelay(1);
 
 	//draw current score, and high score
 	updateScore(0, score);
@@ -54,13 +59,32 @@ int main(){
 	//TODO add something like "press any key to start!"
 	getch();
 
+	//turn timeout on and set the initial direction to "right"
+	timeout(TIMEOUT);
+	dir = 1;
 	//TODO replace '1' with conditional to check if there was a collision
 	while(1){
-		//TODO elaborate on the updated score each loop with conditionals and such
+		input = getch();
+		
+		//update dir based on received input (check that the input is valid as well)
+		switch(input){
+			case KEY_UP:
+				if(dir % 2) dir = 0;
+				break;
+			case KEY_RIGHT:
+				if(!(dir % 2)) dir = 1;
+				break;
+			case KEY_DOWN:
+				if(dir % 2) dir = 2;
+				break;
+			case KEY_LEFT:
+				if(!(dir % 2)) dir = 3;
+		}
+
 		updateScore(0, score);
 		updateScore(1, highscore);
 		updateScore(2, score2);
-		updateScreen(player, 0);
+		updateScreen(player, dir);
 		refresh();
 		//TODO consider changing SPEED depending on if moving horizontally or vertically
 		usleep(SPEED);
