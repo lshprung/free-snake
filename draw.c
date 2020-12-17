@@ -3,9 +3,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define DEBUG 1
+#include "include/body.h"
+
+#define SPEED 50000 //global refresh rate (for usleep())
+
+//#define DEBUG 1
 
 void updateScore(int which, int score);
+void updateScreen(SNAKE *sp, int dir);
 
 #ifdef DEBUG
 void count_up(void);
@@ -16,6 +21,8 @@ int main(){
 	int score2 = 0;
 	int highscore;
 
+	//TODO consider removing score2 altogether
+
 	//TODO implement code to retreive existing high score
 	highscore = 0;
 
@@ -23,18 +30,47 @@ int main(){
 	cbreak();
 	keypad(stdscr, true);
 	noecho();
-	//TODO consider adding color
+	curs_set(0);
 
 	//draw current score, and high score
 	updateScore(0, score);
 	updateScore(1, highscore);
 	updateScore(2, score2);
 
+	//the snake will be initially drawn without calling to body.h
+	//functions in body.h will update the snake and check for collision
+	//updateScreen() will actually draw the snake on each update (and update the scoreboard)
+
+	//initialize and draw starting snake
+	SNAKE *player = makeSnake(6, getmaxy(stdscr)/2, 4);
+	//TODO consider various choices for drawing the snake (the below sets reverse video and draws spaces)
+	attron(A_REVERSE);
+	mvaddch(getmaxy(stdscr)/2, 6, ':');
+	mvaddch(getmaxy(stdscr)/2, 5, ' ');
+	mvaddch(getmaxy(stdscr)/2, 4, ' ');
+	mvaddch(getmaxy(stdscr)/2, 3, ' ');
+	attroff(A_REVERSE);
+
+	//TODO add something like "press any key to start!"
 	getch();
+
+	//TODO replace '1' with conditional to check if there was a collision
+	while(1){
+		//TODO elaborate on the updated score each loop with conditionals and such
+		updateScore(0, score);
+		updateScore(1, highscore);
+		updateScore(2, score2);
+		updateScreen(player, 0);
+		refresh();
+		//TODO consider changing SPEED depending on if moving horizontally or vertically
+		usleep(SPEED);
+	}
 
 	//DEBUG
 #ifdef DEBUG
-	count_up();
+	//count_up();
+	snakeTest();
+	getch();
 #endif
 
 	endwin();
@@ -69,6 +105,35 @@ void updateScore(int which, int score){
 	//draw the title and the score in the right location
 	mvprintw(0, start, "%s", title);
 	mvprintw(1, start + (which % 2 ? 5 : 3) - (!score ? 0 : (int)log10(score)), "%d", score);
+
+	return;
+}
+
+void updateScreen(SNAKE *sp, int dir){
+	char eyes;
+
+	//switch case to decide "eyes" char
+	switch(dir){
+		case 0:
+			eyes = '"';
+			break;
+		case 2:
+			eyes = '.';
+			break;
+		default:
+			eyes = ':';
+	}
+
+	//turn off "back"
+	mvaddch(getSnakeHeady(sp), getSnakeHeadx(sp), ' ');
+	//fix previous "front" (no more eyes)
+	attron(A_REVERSE);
+	mvaddch(getSnakeTaily(sp), getSnakeTailx(sp), ' ');
+	//update the snake position
+	updateSnake(sp, dir);
+	//turn on front
+	mvaddch(getSnakeTaily(sp), getSnakeTailx(sp), eyes);
+	attroff(A_REVERSE);
 
 	return;
 }
