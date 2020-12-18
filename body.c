@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "include/body.h"
@@ -58,7 +59,7 @@ void deleteSnake(SNAKE *sp){
 	return;
 }
 
-void updateSnake(SNAKE *sp, int dir){
+void updateSnake(SNAKE *sp, int dir, int maxx, int maxy, bool *collision){
 	NODE *np;
 
 	if(sp == NULL) return;
@@ -95,10 +96,29 @@ void updateSnake(SNAKE *sp, int dir){
 	sp->tail = np;
 
 	//TODO write checkSnake() which will check to see if the snake had a collision
+	*collision = checkSnake(sp, maxx, maxy);
 
 	return;
 }
 
+//true = collision, false = no collision
+bool checkSnake(SNAKE *sp, int maxx, int maxy){
+	NODE *np;
+
+	if(sp == NULL) return true;
+
+	//check if oob
+	if(sp->tail->x < 0 || sp->tail->x >= maxx || sp->tail->y < 0 || sp->tail->y >= maxy) return true;
+
+	//check if collision with body (check each cell)
+	np = sp->head;
+	while(np != sp->tail && np != NULL){
+		if(sp->tail->x == np->x && sp->tail->y == np->y) return true;
+		np = np->next;
+	}
+
+	return false;
+}
 
 int getSnakeTailx(SNAKE *sp){
 

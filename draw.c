@@ -1,10 +1,12 @@
 #include <math.h>
 #include <ncurses.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include "include/body.h"
 
+#define START_SIZE 4
 //TODO consider having speed be affected by window size
 #define SPEED 50000 //global refresh rate (for usleep())
 #define TIMEOUT 1
@@ -12,7 +14,7 @@
 //#define DEBUG 1
 
 void updateScore(int which, int score);
-void updateScreen(SNAKE *sp, int dir);
+void updateScreen(SNAKE *sp, int dir, bool *collision);
 
 #ifdef DEBUG
 void count_up(void);
@@ -24,6 +26,8 @@ int main(){
 	int highscore;
 	int input;
 	int dir;
+	bool collision = false;
+	int i;
 
 	//TODO consider removing score2 altogether
 
@@ -47,13 +51,13 @@ int main(){
 	//updateScreen() will actually draw the snake on each update (and update the scoreboard)
 
 	//initialize and draw starting snake
-	SNAKE *player = makeSnake(6, getmaxy(stdscr)/2, 4);
+	SNAKE *player = makeSnake(START_SIZE+2, getmaxy(stdscr)/2, START_SIZE);
 	//TODO consider various choices for drawing the snake (the below sets reverse video and draws spaces)
 	attron(A_REVERSE);
-	mvaddch(getmaxy(stdscr)/2, 6, ':');
-	mvaddch(getmaxy(stdscr)/2, 5, ' ');
-	mvaddch(getmaxy(stdscr)/2, 4, ' ');
-	mvaddch(getmaxy(stdscr)/2, 3, ' ');
+	mvaddch(getmaxy(stdscr)/2, START_SIZE+2, ':');
+	for(i = 1; START_SIZE-i > 0; i++){
+		mvaddch(getmaxy(stdscr)/2, START_SIZE+2-i, ' ');
+	}
 	attroff(A_REVERSE);
 
 	//TODO add something like "press any key to start!"
@@ -62,8 +66,7 @@ int main(){
 	//turn timeout on and set the initial direction to "right"
 	timeout(TIMEOUT);
 	dir = 1;
-	//TODO replace '1' with conditional to check if there was a collision
-	while(1){
+	while(!collision){
 		input = getch();
 		
 		//update dir based on received input (check that the input is valid as well)
@@ -84,16 +87,21 @@ int main(){
 		updateScore(0, score);
 		updateScore(1, highscore);
 		updateScore(2, score2);
-		updateScreen(player, dir);
-		refresh();
+		updateScreen(player, dir, &collision);
 		//TODO consider changing SPEED depending on if moving horizontally or vertically
+		refresh();
 		usleep(SPEED);
 	}
+
+	//turn timeout off (wait for input again)
+	timeout(-1);
+
+	//TODO add something like "game over"
+	getch();
 
 	//DEBUG
 #ifdef DEBUG
 	//count_up();
-	snakeTest();
 	getch();
 #endif
 
@@ -133,7 +141,7 @@ void updateScore(int which, int score){
 	return;
 }
 
-void updateScreen(SNAKE *sp, int dir){
+void updateScreen(SNAKE *sp, int dir, bool *collision){
 	char eyes;
 
 	//switch case to decide "eyes" char
@@ -154,7 +162,7 @@ void updateScreen(SNAKE *sp, int dir){
 	attron(A_REVERSE);
 	mvaddch(getSnakeTaily(sp), getSnakeTailx(sp), ' ');
 	//update the snake position
-	updateSnake(sp, dir);
+	updateSnake(sp, dir, getmaxx(stdscr), getmaxy(stdscr), collision);
 	//turn on front
 	mvaddch(getSnakeTaily(sp), getSnakeTailx(sp), eyes);
 	attroff(A_REVERSE);

@@ -8,7 +8,8 @@ typedef struct snake SNAKE;
 SNAKE *makeSnake(int startx, int starty, int len);
 void deleteSnake(SNAKE *sp);
 
-void updateSnake(SNAKE *sp, int dir);
+void updateSnake(SNAKE *sp, int dir, int maxx, int maxy, bool *collision);
+bool checkSnake(SNAKE *sp, int maxx, int maxy);
 
 int getSnakeTailx(SNAKE *sp);
 int getSnakeTaily(SNAKE *sp);
