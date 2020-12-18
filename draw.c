@@ -23,11 +23,10 @@ void count_up(void);
 
 int main(){
 	int score = 0;
-	int score2 = 0;
 	int highscore;
 	int input;
 	int dir;
-	bool collision = false;
+	bool collision;
 	int fruit_loc[2]; //index 0 is x, 1 is y
 	bool fruit_bool = false;
 	int i;
@@ -36,9 +35,6 @@ int main(){
 
 	srand(time(NULL));
 
-	//TODO implement code to retreive existing high score
-	highscore = 0;
-
 	initscr();
 	cbreak();
 	keypad(stdscr, true);
@@ -46,69 +42,82 @@ int main(){
 	curs_set(0);
 	set_escdelay(1);
 
-	//draw current score, and high score
-	updateScore(0, score);
-	updateScore(1, highscore);
-	updateScore(2, score2);
-
-	//the snake will be initially drawn without calling to body.h
-	//functions in body.h will update the snake and check for collision
-	//updateScreen() will actually draw the snake on each update (and update the scoreboard)
-
-	//initialize and draw starting snake
-	SNAKE *player = makeSnake(START_SIZE+2, getmaxy(stdscr)/2, START_SIZE);
-	//TODO consider various choices for drawing the snake (the below sets reverse video and draws spaces)
-	attron(A_REVERSE);
-	mvaddch(getmaxy(stdscr)/2, START_SIZE+2, ':');
-	for(i = 1; START_SIZE-i > 0; i++){
-		mvaddch(getmaxy(stdscr)/2, START_SIZE+2-i, ' ');
-	}
-	attroff(A_REVERSE);
-
-	//TODO add something like "press any key to start!"
-	getch();
-
-	//turn timeout on and set the initial direction to "right"
-	timeout(TIMEOUT);
-	dir = 1;
-	while(!collision){
-		input = getch();
+	while(input != 'q'){
+		clear();
 		
-		//update dir based on received input (check that the input is valid as well)
-		switch(input){
-			case KEY_UP:
-				if(dir % 2) dir = 0;
-				break;
-			case KEY_RIGHT:
-				if(!(dir % 2)) dir = 1;
-				break;
-			case KEY_DOWN:
-				if(dir % 2) dir = 2;
-				break;
-			case KEY_LEFT:
-				if(!(dir % 2)) dir = 3;
-		}
+		//reset variables
+		collision = false;
+		fruit_bool = false;
+		score = 0;
+		//TODO implement code to retreive existing high score
+		highscore = 0;
 
+
+		//draw current score, and high score
 		updateScore(0, score);
 		updateScore(1, highscore);
-		updateScore(2, score2);
-		updateScreen(player, dir, &collision, fruit_loc, &fruit_bool, &score);
-		//TODO consider changing SPEED depending on if moving horizontally or vertically
-		refresh();
-		usleep(SPEED);
-	}
 
-	//turn timeout off (wait for input again)
-	timeout(-1);
+		//the snake will be initially drawn without calling to body.h
+		//functions in body.h will update the snake and check for collision
+		//updateScreen() will actually draw the snake on each update (and update the scoreboard)
 
-	//TODO add something like "game over"
-	getch();
+		//initialize and draw starting snake
+		SNAKE *player = makeSnake(START_SIZE+2, getmaxy(stdscr)/2, START_SIZE);
+		//TODO consider various choices for drawing the snake (the below sets reverse video and draws spaces)
+		attron(A_REVERSE);
+		mvaddch(getmaxy(stdscr)/2, START_SIZE+2, ':');
+		for(i = 1; START_SIZE-i > 0; i++){
+			mvaddch(getmaxy(stdscr)/2, START_SIZE+2-i, ' ');
+		}
+		attroff(A_REVERSE);
 
-	//DEBUG
+		//TODO add something like "press any key to start!"
+		getch();
+
+		//turn timeout on and set the initial direction to "right"
+		timeout(TIMEOUT);
+		dir = 1;
+		while(!collision){
+			input = getch();
+			
+			//update dir based on received input (check that the input is valid as well)
+			switch(input){
+				case KEY_UP:
+					if(dir % 2) dir = 0;
+					break;
+				case KEY_RIGHT:
+					if(!(dir % 2)) dir = 1;
+					break;
+				case KEY_DOWN:
+					if(dir % 2) dir = 2;
+					break;
+				case KEY_LEFT:
+					if(!(dir % 2)) dir = 3;
+			}
+
+			updateScore(0, score);
+			if(score > highscore) highscore = score;
+			updateScore(1, highscore);
+			updateScreen(player, dir, &collision, fruit_loc, &fruit_bool, &score);
+			//TODO consider changing SPEED depending on if moving horizontally or vertically
+			refresh();
+			usleep(SPEED);
+		}
+
+		deleteSnake(player);
+
+		//turn timeout off (wait for input again)
+		timeout(-1);
+
+		//TODO add something like "game over"
+		while(input != 'q' && input != ' ' && input != 10) input = getch();
+
+		//DEBUG
 #ifdef DEBUG
-	//count_up();
-	getch();
+		//count_up();
+		getch();
 #endif
+	}
 
 	endwin();
 	return 0;
@@ -128,11 +137,6 @@ void updateScore(int which, int score){
 		case 1: //high score
 			title = "Highscore";
 			start = getmaxx(stdscr)/2 - 5;
-			break;
-
-		case 2: //p2 score
-			title = "Score";
-			start = getmaxx(stdscr) - 6;
 			break;
 
 		default:
@@ -177,7 +181,9 @@ void updateScreen(SNAKE *sp, int dir, bool *collision, int *fruit_loc, bool *fru
 	if(!(*fruit)){
 		*fruit_loc = rand() % getmaxx(stdscr);
 		*(fruit_loc+1) = rand() % (getmaxy(stdscr)-2) + 2;
+		attron(A_BOLD);
 		mvaddch(*(fruit_loc+1), *fruit_loc, '@');
+		attroff(A_BOLD);
 		*fruit = true;
 	}
 
