@@ -2,6 +2,7 @@
 #include <ncurses.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "include/body.h"
@@ -14,7 +15,7 @@
 //#define DEBUG 1
 
 void updateScore(int which, int score);
-void updateScreen(SNAKE *sp, int dir, bool *collision);
+void updateScreen(SNAKE *sp, int dir, bool *collision, int *fruit_loc, bool *fruit, int *score);
 
 #ifdef DEBUG
 void count_up(void);
@@ -27,9 +28,13 @@ int main(){
 	int input;
 	int dir;
 	bool collision = false;
+	int fruit_loc[2]; //index 0 is x, 1 is y
+	bool fruit_bool = false;
 	int i;
 
 	//TODO consider removing score2 altogether
+
+	srand(time(NULL));
 
 	//TODO implement code to retreive existing high score
 	highscore = 0;
@@ -87,7 +92,7 @@ int main(){
 		updateScore(0, score);
 		updateScore(1, highscore);
 		updateScore(2, score2);
-		updateScreen(player, dir, &collision);
+		updateScreen(player, dir, &collision, fruit_loc, &fruit_bool, &score);
 		//TODO consider changing SPEED depending on if moving horizontally or vertically
 		refresh();
 		usleep(SPEED);
@@ -141,7 +146,7 @@ void updateScore(int which, int score){
 	return;
 }
 
-void updateScreen(SNAKE *sp, int dir, bool *collision){
+void updateScreen(SNAKE *sp, int dir, bool *collision, int *fruit_loc, bool *fruit, int *score){
 	char eyes;
 
 	//switch case to decide "eyes" char
@@ -162,10 +167,19 @@ void updateScreen(SNAKE *sp, int dir, bool *collision){
 	attron(A_REVERSE);
 	mvaddch(getSnakeTaily(sp), getSnakeTailx(sp), ' ');
 	//update the snake position
-	updateSnake(sp, dir, getmaxx(stdscr), getmaxy(stdscr), collision);
+	updateSnake(sp, dir, getmaxx(stdscr), getmaxy(stdscr), collision, fruit_loc, fruit, score);
 	//turn on front
 	mvaddch(getSnakeTaily(sp), getSnakeTailx(sp), eyes);
 	attroff(A_REVERSE);
+
+	//TODO add logic to prevent fruit from spawning inside snake
+	//draw a new fruit, if necessary (do not draw it over scoreboard)
+	if(!(*fruit)){
+		*fruit_loc = rand() % getmaxx(stdscr);
+		*(fruit_loc+1) = rand() % (getmaxy(stdscr)-2) + 2;
+		mvaddch(*(fruit_loc+1), *fruit_loc, '@');
+		*fruit = true;
+	}
 
 	return;
 }

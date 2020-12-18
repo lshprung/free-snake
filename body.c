@@ -19,6 +19,7 @@ typedef struct snake{
 //private prototypes
 NODE *makeNode(int x, int y);
 void deleteNode(NODE *np);
+void increaseSnake(SNAKE *sp);
 
 //public functions
 SNAKE *makeSnake(int startx, int starty, int len){
@@ -59,7 +60,7 @@ void deleteSnake(SNAKE *sp){
 	return;
 }
 
-void updateSnake(SNAKE *sp, int dir, int maxx, int maxy, bool *collision){
+void updateSnake(SNAKE *sp, int dir, int maxx, int maxy, bool *collision, int *fruit_loc, bool *fruit, int *score){
 	NODE *np;
 
 	if(sp == NULL) return;
@@ -95,7 +96,16 @@ void updateSnake(SNAKE *sp, int dir, int maxx, int maxy, bool *collision){
 	//update tail pointer
 	sp->tail = np;
 
-	//TODO write checkSnake() which will check to see if the snake had a collision
+	//check if eating fruit
+	if(*fruit && sp->tail->x == *fruit_loc && sp->tail->y == *(fruit_loc + 1)){
+		*fruit = false;
+		(*score)++;
+
+		//need to increase snake size
+		increaseSnake(sp);
+	}
+
+	//check collision
 	*collision = checkSnake(sp, maxx, maxy);
 
 	return;
@@ -162,6 +172,18 @@ NODE *makeNode(int x, int y){
 void deleteNode(NODE *np){
 
 	if(np != NULL) free(np);
+
+	return;
+}
+
+void increaseSnake(SNAKE *sp){
+	int xdiff = sp->head->next->x - sp->head->x;
+	int ydiff = sp->head->next->y - sp->head->y;
+	NODE *new = makeNode(sp->head->x - xdiff, sp->head->y - ydiff);
+
+	new->next = sp->head;
+	sp->head = new;
+	sp->length++;
 
 	return;
 }
