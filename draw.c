@@ -1,7 +1,12 @@
+#include <errno.h>
 #include <math.h>
 #include <ncurses.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -16,6 +21,8 @@
 
 void updateScore(int which, int score);
 void updateScreen(SNAKE *sp, int dir, bool *collision, int *fruit_loc, bool *fruit, int *score);
+int loadScore(void);
+void saveScore(int highscore);
 
 #ifdef DEBUG
 void count_up(void);
@@ -28,7 +35,8 @@ int main(){
 	int dir;
 	bool collision;
 	int fruit_loc[2]; //index 0 is x, 1 is y
-	bool fruit_bool = false;
+	bool fruit_bool;
+	bool new_hs_flag;
 	int i;
 
 	//TODO consider removing score2 altogether
@@ -49,8 +57,8 @@ int main(){
 		collision = false;
 		fruit_bool = false;
 		score = 0;
-		//TODO implement code to retreive existing high score
-		highscore = 0;
+		new_hs_flag = false;
+		highscore = loadScore();
 
 
 		//draw current score, and high score
@@ -96,7 +104,10 @@ int main(){
 			}
 
 			updateScore(0, score);
-			if(score > highscore) highscore = score;
+			if(score > highscore){
+				highscore = score;
+				new_hs_flag = true;
+			}
 			updateScore(1, highscore);
 			updateScreen(player, dir, &collision, fruit_loc, &fruit_bool, &score);
 			//TODO consider changing SPEED depending on if moving horizontally or vertically
@@ -105,6 +116,7 @@ int main(){
 		}
 
 		deleteSnake(player);
+		if(new_hs_flag) saveScore(highscore);
 
 		//turn timeout off (wait for input again)
 		timeout(-1);
@@ -189,6 +201,58 @@ void updateScreen(SNAKE *sp, int dir, bool *collision, int *fruit_loc, bool *fru
 
 	return;
 }
+
+int loadScore(){
+	FILE *savedata;
+	char *path = malloc(sizeof(char) * 256);
+	int hs = 0;
+	char *home = getenv("HOME");
+
+	sprintf(path, "%s/.local/share/simple-snake/save.bin", home);
+	savedata = fopen(path, "rb");
+
+	if(savedata != NULL){
+		fread(&hs, sizeof(int), 1, savedata);
+		fclose(savedata);
+	}
+
+	free(path);
+	return hs;
+}
+
+void saveScore(int highscore){
+	FILE *savedata;
+	char *path = malloc(sizeof(char) * 256);
+	char *home = getenv("HOME");
+
+	sprintf(path, "%s/.local/share/simple-snake/save.bin", home);
+	savedata = fopen(path, "wb");
+
+	//if the file does not exist, create it
+	if(savedata == NULL){
+		if(home == NULL) return;
+
+		sprintf(path, "%s/.local/", home);
+		mkdir(path, 0700);
+
+		sprintf(path, "%s/.local/share/", home);
+		mkdir(path, 0755);
+
+		sprintf(path, "%s/.local/share/simple-snake/", home);
+		mkdir(path, 0755);
+
+		sprintf(path, "%s/.local/share/simple-snake/save.bin", home);
+		savedata = fopen(path, "wb");
+		if(savedata == NULL) return;
+	}
+
+	fwrite(&highscore, sizeof(int), 1, savedata);
+	fclose(savedata);
+
+	free(path);
+	return;
+}
+		
 
 //debug functions start here
 #ifdef DEBUG
