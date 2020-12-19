@@ -1,5 +1,5 @@
 CC = gcc
-NAME = free_snake
+NAME = simple_snake
 LIBS = -lncurses -lm
 
 $(NAME): draw.o body.o
@@ -10,4 +10,4 @@ body.o: body.c include/body.h
 
 .PHONY: clean
 clean:
-	rem *.o $(NAME)
+	rm *.o $(NAME)
