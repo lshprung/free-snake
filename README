@@ -1,0 +1,8 @@
+This is a simple ncurses snake game written in C
+
+-- Compilation Instructions --
+
+$ ./configure
+$ make
+
+The resulting binary will be created in src/
