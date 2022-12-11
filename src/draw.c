@@ -10,7 +10,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../include/body.h"
+#include "include/body.h"
 
 #define START_SIZE 4
 //TODO consider having speed be affected by window size

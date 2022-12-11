@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "../include/body.h"
+#include "include/body.h"
 
 typedef struct node{
 	int x;

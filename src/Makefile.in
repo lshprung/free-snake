@@ -246,7 +246,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-simple_snake_SOURCES = body.c draw.c body.h
+simple_snake_SOURCES = body.c draw.c
 simple_snake_LDADD = -lncurses -lm
 all: all-am
 
