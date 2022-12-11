@@ -86,7 +86,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = simple_snake$(EXEEXT)
+bin_PROGRAMS = simple-snake$(EXEEXT)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -324,8 +324,8 @@ uninstall-binPROGRAMS:
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
-simple_snake$(EXEEXT): $(simple_snake_OBJECTS) $(simple_snake_DEPENDENCIES) $(EXTRA_simple_snake_DEPENDENCIES) 
-	@rm -f simple_snake$(EXEEXT)
+simple-snake$(EXEEXT): $(simple_snake_OBJECTS) $(simple_snake_DEPENDENCIES) $(EXTRA_simple_snake_DEPENDENCIES) 
+	@rm -f simple-snake$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(simple_snake_OBJECTS) $(simple_snake_LDADD) $(LIBS)
 
 mostlyclean-compile:
