@@ -6,3 +6,10 @@ $ ./configure
 $ make
 
 The resulting binary will be created in src/
+
+-- Creating binary deb package --
+
+Rename working directory to PACKAGE-VERSION: something like "simple-snake-0.1"
+
+$ debmake -e EMAIL -f FULLNAME
+$ dpkg-buildpackage -b
