@@ -7,9 +7,41 @@ $ make
 
 The resulting binary will be created in src/
 
--- Creating binary deb package --
+-- Creating deb package --
 
-Rename working directory to PACKAGE-VERSION: something like "simple-snake-0.1"
+Build the dist archive, and move it up one directory. ARCHIVE will be something like `simple-snake-0.1.tar.gz`
+
+$ ./configure
+$ make dist
+$ mv ARCHIVE ..
+
+Rename the project directory to match the ARCHIVE (i.e., if ARCHIVE is `simple-snake-0.1.tar.gz`, rename the project directory to `simple-snake-0.1`)
+
+Now, update the `debian` directory and build
 
 $ debmake -e EMAIL -f FULLNAME
-$ dpkg-buildpackage -b
+$ debuild
+
+The resulting package will be created in the same directory as ARCHIVE was placed
+
+-- Creating rpm package --
+
+If this is your first time building an rpm package:
+
+$ rpmdev-setuptree
+
+Now, build the dist archive, and move it to SOURCES. ARCHIVE will be something like `simple-snake-0.1.tar.gz`
+
+$ ./configure
+$ make dist
+$ mv ARCHIVE ~/rpmbuild/SOURCES
+
+Copy the spec file to SPECS
+
+$ cp simple-snake.spec ~/rpmbuild/SPECS
+
+Build the package
+
+$ rpmbuild -ba ~/rpmbuild/SPECS/simple-snake.spec
+
+The resulting package will be created under `~/rpmbuild/RPMS`
