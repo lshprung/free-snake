@@ -4081,6 +4081,8 @@ if test "x$ac_cv_header_ncurses_h" = xyes; then :
 #define HAVE_NCURSES_H 1
 _ACEOF
 
+else
+  as_fn_error $? "missing ncurses.h" "$LINENO" 5
 fi
 
 done
