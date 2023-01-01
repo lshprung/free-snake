@@ -5,5 +5,8 @@ AC_CONFIG_FILES([
 				 Makefile 
 				 src/Makefile
 				 ])
-AC_CHECK_HEADERS([ncurses.h], [], AC_MSG_ERROR(missing ncurses.h))
+AX_WITH_CURSES
+if test "x$ax_cv_curses" != xyes; then
+	AC_MSG_ERROR([requires an X/Open-compatible Curses library with color])
+fi
 AC_OUTPUT
