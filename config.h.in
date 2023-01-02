@@ -73,6 +73,12 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
+/* Define to 1 if you have the `_mkdir' function. */
+#undef HAVE__MKDIR
+
+/* Define if mkdir takes only one argument. */
+#undef MKDIR_TAKES_ONE_ARG
+
 /* Name of package */
 #undef PACKAGE
 

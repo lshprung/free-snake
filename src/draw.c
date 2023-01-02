@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <errno.h>
 #include <math.h>
 #include <ncurses.h>
@@ -11,6 +13,11 @@
 #include <unistd.h>
 
 #include "include/body.h"
+
+#ifdef MKDIR_TAKES_ONE_ARG   /* MinGW32 */
+#undef mkdir
+#define mkdir(a, b) mkdir(a)
+#endif
 
 #define START_SIZE 4
 //TODO consider having speed be affected by window size

@@ -23,10 +23,13 @@ AC_CHECK_FUNCS([mkdir])
 AC_CONFIG_FILES([Makefile 
 				 src/Makefile])
 
-# Additional Macro Checks
+# Check that curses.h exists
 AX_WITH_CURSES
 if test "x$ax_cv_curses" != xyes; then
 	AC_MSG_ERROR([requires an X/Open-compatible Curses library with color])
 fi
+
+# Check if mkdir takes one or more arguments
+AX_FUNC_MKDIR
 
 AC_OUTPUT
