@@ -213,9 +213,11 @@ int loadScore(){
 	FILE *savedata;
 	char *path = malloc(sizeof(char) * 256);
 	int hs = 0;
-	char *home = getenv("HOME");
 
-	sprintf(path, "%s/.local/share/simple-snake/save.bin", home);
+	if(getenv("HOME") != NULL) 
+		sprintf(path, "%s/.local/share/simple-snake/save.bin", getenv("HOME"));
+	else if(getenv("APPDATA") != NULL) 
+		sprintf(path, "%s/simple-snake/save.bin", getenv("APPDATA"));
 	savedata = fopen(path, "rb");
 
 	if(savedata != NULL){
@@ -230,26 +232,41 @@ int loadScore(){
 void saveScore(int highscore){
 	FILE *savedata;
 	char *path = malloc(sizeof(char) * 256);
-	char *home = getenv("HOME");
+	bool has_appdata = false; //set to true if appdata is defined (implying WIN32)
 
-	sprintf(path, "%s/.local/share/simple-snake/save.bin", home);
+	if(getenv("HOME") != NULL) 
+		sprintf(path, "%s/.local/share/simple-snake/save.bin", getenv("HOME"));
+	else if(getenv("APPDATA") != NULL){
+		sprintf(path, "%s/simple-snake/save.bin", getenv("APPDATA"));
+		has_appdata = true;
+	}
+	else return;
 	savedata = fopen(path, "wb");
 
 	//if the file does not exist, create it
 	if(savedata == NULL){
-		if(home == NULL) return;
+		if(!has_appdata){
+			sprintf(path, "%s/.local/", getenv("HOME"));
+			mkdir(path, 0700);
 
-		sprintf(path, "%s/.local/", home);
-		mkdir(path, 0700);
+			sprintf(path, "%s/.local/share/", getenv("HOME"));
+			mkdir(path, 0755);
 
-		sprintf(path, "%s/.local/share/", home);
-		mkdir(path, 0755);
+			sprintf(path, "%s/.local/share/simple-snake/", getenv("HOME"));
+			mkdir(path, 0755);
 
-		sprintf(path, "%s/.local/share/simple-snake/", home);
-		mkdir(path, 0755);
+			sprintf(path, "%s/.local/share/simple-snake/save.bin", getenv("HOME"));
+			savedata = fopen(path, "wb");
+		}
 
-		sprintf(path, "%s/.local/share/simple-snake/save.bin", home);
-		savedata = fopen(path, "wb");
+		else {
+			sprintf(path, "%s/simple-snake/", getenv("APPDATA"));
+			mkdir(path, 0755);
+
+			sprintf(path, "%s/simple-snake/save.bin", getenv("APPDATA"));
+			savedata = fopen(path, "wb");
+		}
+
 		if(savedata == NULL) return;
 	}
 
